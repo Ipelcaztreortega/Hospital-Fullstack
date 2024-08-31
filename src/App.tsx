@@ -1,31 +1,27 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
-
-// Import your page components here
-import Home from './pages/Home.tsx';
-import Patients from './pages/Patients.tsx';
-import Doctors from './pages/Doctors.tsx';
-import Appointments from './pages/Appointments.tsx';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Navbar from './components/Navbar';  // Import the Navbar component
+import Home from './pages/Home';
+import Patients from './pages/Patients';
+import Doctors from './pages/Doctors';
+import Appointments from './pages/Appointments';
 
 const App: React.FC = () => {
   return (
     <Router>
-      <div>
-        <nav>
-          <ul>
-            <li><Link to="/">Home</Link></li>
-            <li><Link to="/patients">Patients</Link></li>
-            <li><Link to="/doctors">Doctors</Link></li>
-            <li><Link to="/appointments">Appointments</Link></li>
-          </ul>
-        </nav>
-
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/patients" element={<Patients />} />
-          <Route path="/doctors" element={<Doctors />} />
-          <Route path="/appointments" element={<Appointments />} />
-        </Routes>
+      <div className="flex flex-col min-h-screen">
+        <Navbar />  {/* Use the Navbar component here */}
+        <main className="flex-grow container mx-auto px-4 py-8">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/patients" element={<Patients />} />
+            <Route path="/doctors" element={<Doctors />} />
+            <Route path="/appointments" element={<Appointments />} />
+          </Routes>
+        </main>
+        <footer className="bg-gray-200 text-center py-4">
+          <p>© 2024 IE Group. All rights reserved.</p>
+        </footer>
       </div>
     </Router>
   );
