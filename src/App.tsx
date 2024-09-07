@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Navbar from './components/Navbar';  // Import the Navbar component
 import Home from './pages/Home';
 import Patients from './pages/Patients';
+import PatientProfile from './components/PatientProfile';
 import Doctors from './pages/Doctors';
 import Appointments from './pages/Appointments';
 
@@ -15,6 +16,7 @@ const App: React.FC = () => {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/patients" element={<Patients />} />
+            <Route path="/patient/:id" element={<PatientProfile />} />
             <Route path="/doctors" element={<Doctors />} />
             <Route path="/appointments" element={<Appointments />} />
           </Routes>
