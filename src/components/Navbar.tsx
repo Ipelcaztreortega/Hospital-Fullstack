@@ -1,8 +1,43 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { auth } from "../config/firebase";
 
 const Navbar: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState<boolean>(false);
+
+  useEffect(() => {
+    const authListener = auth.onAuthStateChanged((user) => {
+      setIsUserLoggedIn(!!user);
+    });
+
+    return () => {
+      authListener(); // Unsubscribe from the listener when the component unmounts
+    };
+  }, []);
+
+  const handleAuthButtonClick = () => {
+    if (isUserLoggedIn) {
+      // Log out the user
+      auth.signOut()
+        .then(() => {
+          setIsUserLoggedIn(false);
+          navigate("/"); // Redirect to home after logout
+        })
+        .catch((error) => {
+          console.error("Error signing out:", error);
+        });
+    } else {
+      // Redirect to the login page
+      navigate("/Login");
+    }
+  };
+
+  const getUserButtonContent = () => {
+    return isUserLoggedIn ? "Logout" : "Login";
+  };
 
   return (
     <nav className="bg-white shadow-lg">
@@ -19,6 +54,9 @@ const Navbar: React.FC = () => {
               <Link to="/patients" className="py-4 px-2 text-gray-500 font-semibold hover:text-green-500 transition duration-300">Patients</Link>
               <Link to="/doctors" className="py-4 px-2 text-gray-500 font-semibold hover:text-green-500 transition duration-300">Doctors</Link>
               <Link to="/appointments" className="py-4 px-2 text-gray-500 font-semibold hover:text-green-500 transition duration-300">Appointments</Link>
+              <button onClick={handleAuthButtonClick} className="py-4 px-2 text-gray-500 font-semibold hover:text-green-500 transition duration-300">
+                {getUserButtonContent()}
+              </button>
             </div>
           </div>
           <div className="md:hidden flex items-center">
@@ -42,6 +80,9 @@ const Navbar: React.FC = () => {
         <Link to="/patients" className="block py-2 px-4 text-sm hover:bg-green-500 hover:text-white transition duration-300">Patients</Link>
         <Link to="/doctors" className="block py-2 px-4 text-sm hover:bg-green-500 hover:text-white transition duration-300">Doctors</Link>
         <Link to="/appointments" className="block py-2 px-4 text-sm hover:bg-green-500 hover:text-white transition duration-300">Appointments</Link>
+        <button onClick={handleAuthButtonClick} className="block py-2 px-4 text-sm hover:bg-green-500 hover:text-white transition duration-300">
+          {getUserButtonContent()}
+        </button>
       </div>
     </nav>
   );

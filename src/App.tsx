@@ -6,6 +6,7 @@ import Patients from './pages/Patients';
 import PatientProfile from './components/PatientProfile';
 import Doctors from './pages/Doctors';
 import Appointments from './pages/Appointments';
+import Login from './pages/Login/Login';
 
 const App: React.FC = () => {
   return (
@@ -19,6 +20,7 @@ const App: React.FC = () => {
             <Route path="/patient/:id" element={<PatientProfile />} />
             <Route path="/doctors" element={<Doctors />} />
             <Route path="/appointments" element={<Appointments />} />
+            <Route path="/login" element={<Login/>}/>
           </Routes>
         </main>
         <footer className="bg-gray-200 text-center py-4">
