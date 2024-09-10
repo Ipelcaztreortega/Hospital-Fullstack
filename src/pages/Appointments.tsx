@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { collection, getDocs, query, where, Query, DocumentData, Timestamp } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { Link } from 'react-router-dom';
+import AppointmentModal from '../components/AppointmentModal';
 
 const localizer = momentLocalizer(moment);
 
@@ -19,13 +20,16 @@ interface Appointment {
 
 interface Doctor {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
 }
 
 const Appointments: React.FC = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [selectedDoctor, setSelectedDoctor] = useState<string>('');
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     fetchDoctors();
@@ -41,34 +45,32 @@ const Appointments: React.FC = () => {
     const doctorsSnapshot = await getDocs(doctorsCollection);
     const doctorsList = doctorsSnapshot.docs.map(doc => ({
       id: doc.id,
-      name: `${doc.data().firstName} ${doc.data().lastName}`,
+      firstName: doc.data().firstName,
+      lastName: doc.data().lastName,
     }));
     setDoctors(doctorsList);
   };
 
   const fetchAppointments = async () => {
     const appointmentsCollection = collection(db, 'appointments');
-    let appointmentsQuery: Query<DocumentData>;
+    let appointmentsQuery = query(appointmentsCollection);
     
     if (selectedDoctor) {
       appointmentsQuery = query(appointmentsCollection, where('doctorId', '==', selectedDoctor));
-    } else {
-      appointmentsQuery = query(appointmentsCollection);
     }
 
     const appointmentsSnapshot = await getDocs(appointmentsQuery);
     const appointmentsList = appointmentsSnapshot.docs.map(doc => {
       const data = doc.data();
-      const start = data.appointmentDate instanceof Timestamp 
-        ? data.appointmentDate.toDate() 
-        : new Date(data.appointmentDate);
-      const end = new Date(start.getTime() + 60 * 60 * 1000); // Assume 1 hour duration
-      
       return {
         id: doc.id,
-        title: `Appointment with Dr. ${doctors.find(d => d.id === data.doctorId)?.name || 'Unknown'}`,
-        start,
-        end,
+        title: `Appointment with Dr. ${doctors.find(d => d.id === data.doctorId)?.lastName || 'Unknown'}`,
+        start: data.appointmentDate && data.appointmentTime 
+          ? new Date(`${data.appointmentDate}T${data.appointmentTime}`)
+          : new Date(),
+        end: data.appointmentDate && data.appointmentTime 
+          ? new Date(new Date(`${data.appointmentDate}T${data.appointmentTime}`).getTime() + 3600000)
+          : new Date(new Date().getTime() + 3600000),
         doctorId: data.doctorId,
         patientId: data.patientId,
       };
@@ -79,6 +81,16 @@ const Appointments: React.FC = () => {
 
   const handleDoctorChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedDoctor(event.target.value);
+  };
+
+  const handleSelectEvent = (event: Appointment) => {
+    setSelectedAppointment(event);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedAppointment(null);
   };
 
   return (
@@ -96,7 +108,7 @@ const Appointments: React.FC = () => {
           >
             <option value="">All Doctors</option>
             {doctors.map((doctor) => (
-              <option key={doctor.id} value={doctor.id}>{doctor.name}</option>
+              <option key={doctor.id} value={doctor.id}>{doctor.firstName} {doctor.lastName}</option>
             ))}
           </select>
         </div>
@@ -111,8 +123,15 @@ const Appointments: React.FC = () => {
         startAccessor="start"
         endAccessor="end"
         style={{ height: 500 }}
-        views={['month', 'week', 'day']}
+        onSelectEvent={handleSelectEvent}
       />
+
+      {isModalOpen && selectedAppointment && (
+        <AppointmentModal
+          appointment={selectedAppointment}
+          onClose={closeModal}
+        />
+      )}
     </div>
   );
 };
