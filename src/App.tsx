@@ -7,6 +7,7 @@ import PatientProfile from './components/PatientProfile';
 import Doctors from './pages/Doctors';
 import DoctorProfile from './components/DoctorProfile';
 import Appointments from './pages/Appointments';
+import Login from './pages/Login/Login';
 import AddAppointment from './components/AddAppointment';
 
 const App: React.FC = () => {
@@ -22,6 +23,7 @@ const App: React.FC = () => {
             <Route path="/doctors" element={<Doctors />} />
             <Route path="/doctor/:id" element={<DoctorProfile />} />
             <Route path="/appointments" element={<Appointments />} />
+            <Route path="/login" element={<Login/>}/>
             <Route path="/add-appointment" element={<AddAppointment />} />
           </Routes>
         </main>
